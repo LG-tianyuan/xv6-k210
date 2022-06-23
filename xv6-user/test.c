@@ -1,7 +1,6 @@
 #include "kernel/include/types.h"
 #include "kernel/include/stat.h"
 #include "kernel/include/sysinfo.h"
-#include "kernel/include/times.h"
 #include "xv6-user/user.h"
 
 int main()

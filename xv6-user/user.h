@@ -39,7 +39,6 @@ int rename(char *old, char *new);
 int getppid(void);
 clock_t times(struct tms*);
 
-
 // ulib.c
 int stat(const char*, struct stat*);
 char* strcpy(char*, const char*);
