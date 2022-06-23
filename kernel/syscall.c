@@ -11,6 +11,7 @@
 #include "include/vm.h"
 #include "include/string.h"
 #include "include/printf.h"
+#include "include/times.h"
 
 // Fetch the uint64 at addr from the current process.
 int
@@ -116,6 +117,9 @@ extern uint64 sys_remove(void);
 extern uint64 sys_trace(void);
 extern uint64 sys_sysinfo(void);
 extern uint64 sys_rename(void);
+//add
+extern uint64 sys_getppid(void);
+extern uint64 sys_times(void);
 
 static uint64 (*syscalls[])(void) = {
   [SYS_fork]        sys_fork,
@@ -144,6 +148,8 @@ static uint64 (*syscalls[])(void) = {
   [SYS_trace]       sys_trace,
   [SYS_sysinfo]     sys_sysinfo,
   [SYS_rename]      sys_rename,
+  [SYS_getppid]     sys_getppid,
+  [SYS_times]       sys_times,
 };
 
 static char *sysnames[] = {
@@ -173,6 +179,8 @@ static char *sysnames[] = {
   [SYS_trace]       "trace",
   [SYS_sysinfo]     "sysinfo",
   [SYS_rename]      "rename",
+  [SYS_getppid]     "getppid",
+  [SYS_times]       "times",
 };
 
 void
@@ -223,4 +231,29 @@ sys_sysinfo(void)
   }
 
   return 0;
+}
+
+uint64
+sys_times(void)
+{
+  uint64 addr;
+  if (argaddr(0, &addr) < 0) {
+    return -1;
+  }
+
+  struct tms t;
+
+  clock_t timeval;
+
+  timeval = r_time();
+  t.utime = timeval;
+  t.stime = 0;
+  t.cutime = 0;
+  t.cstime = 0;
+
+  if (copyout2(addr, (char *)&t, sizeof(t)) < 0) {
+    return -1;
+  }
+
+  return timeval;
 }

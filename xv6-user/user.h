@@ -1,10 +1,12 @@
 #include "kernel/include/types.h"
 #include "kernel/include/stat.h"
 #include "kernel/include/fcntl.h"
+#include "kernel/include/times.h"
 
 struct stat;
 struct rtcdate;
 struct sysinfo;
+struct tms;
 
 // system calls
 int fork(void);
@@ -33,6 +35,10 @@ int remove(char *filename);
 int trace(int mask);
 int sysinfo(struct sysinfo *);
 int rename(char *old, char *new);
+// add
+int getppid(void);
+clock_t times(struct tms*);
+
 
 // ulib.c
 int stat(const char*, struct stat*);
