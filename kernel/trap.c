@@ -12,6 +12,7 @@
 #include "include/console.h"
 #include "include/timer.h"
 #include "include/disk.h"
+#include "include/signal.h"
 
 extern char trampoline[], uservec[], userret[];
 
@@ -67,11 +68,14 @@ usertrap(void)
   p->proc_tms.utime += temp - p->okstmp;
 
   // save user program counter.
+  // if(p->sigflag == 0)
   p->trapframe->epc = r_sepc();
-  
+  // if(p->sigflag != 0)
+  //   printf("pid: %d, name: %s, epc: %d\n", p->pid, p->name, p->trapframe->epc);
+
   if(r_scause() == 8){
     // system call
-    if(p->killed)
+    if(p->killed == SIGTERM)
       exit(-1);
     // sepc points to the ecall instruction,
     // but we want to return to the next instruction.
@@ -83,16 +87,30 @@ usertrap(void)
   } 
   else if((which_dev = devintr()) != 0){
     // ok
+    if(which_dev == 2){ //clock interrupt
+        printf("pid: %d, name: %s, epc: %d\n", p->pid, p->name, p->trapframe->epc);
+        if(p->alarm > 0){
+          p->alarm--;
+          // printf("process ticks:%d\n",p->alarm);
+          if(p->alarm == 0){
+            p->killed = SIGALRM;
+            p->ticks = 0;
+          }
+        }
+    }
   } 
   else {
     printf("\nusertrap(): unexpected scause %p pid=%d %s\n", r_scause(), p->pid, p->name);
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
     // trapframedump(p->trapframe);
-    p->killed = 1;
+    p->killed = SIGTERM;
   }
 
-  if(p->killed)
-    exit(-1);
+  if(p->killed){
+    if(p->killed == SIGTERM)
+      exit(-1);
+    sighandle();
+  }
 
   // give up the CPU if this is a timer interrupt.
   if(which_dev == 2)
@@ -137,6 +155,8 @@ usertrapret(void)
   x |= SSTATUS_SPIE; // enable interrupts in user mode
   w_sstatus(x);
 
+  // if(p->sigflag)
+  //   printf("epc:%d\n",p->trapframe->epc);
   // set S Exception Program Counter to the saved user pc.
   w_sepc(p->trapframe->epc);
 
@@ -159,7 +179,7 @@ kerneltrap() {
   uint64 sepc = r_sepc();
   uint64 sstatus = r_sstatus();
   uint64 scause = r_scause();
-  
+
   if((sstatus & SSTATUS_SPP) == 0)
     panic("kerneltrap: not from supervisor mode");
   if(intr_get() != 0)
