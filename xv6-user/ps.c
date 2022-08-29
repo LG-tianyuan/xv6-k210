@@ -70,7 +70,7 @@ int parse_arg(char *arg)
 void format_time(char* times, uint64 ticks)
 {
 	if(ticks)
-		ticks /= CLK_INTER_FREQ;
+		ticks /= TICKS_FREQ;
 	int hh,mm,ss;
 	char tmp[3];
 	ss = ticks % 60;

@@ -177,16 +177,13 @@ uint64 sys_alarm(void)
   acquire(&tickslock);
   p->ticks = ticks;
   release(&tickslock);
-  p->alarm = seconds*5;
+  p->alarm = seconds*TICKS_FREQ/2;
   return 0;
 }
 
 uint64 sys_pause(void)
 {
   struct proc* p = myproc();
-  printf("pause: waiting for signal to wake up!\n");
-  // p->state = SLEEPING;
-  // scheduler();
   acquire(&tickslock);
   while(p->killed == 0){
     sleep(&ticks, &tickslock);
