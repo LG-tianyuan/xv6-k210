@@ -4,7 +4,7 @@ Run xv6-riscv on k210 board
 
 ## See [Tasks](https://github.com/abrasumente233/osterm)
 
-## Different from [xv6-k210](..)
+## Different from [xv6-k210](https://github.com/LG-tianyuan/xv6-k210)
 + For `/proc`  file system
   + add another version of implementation of `ls` command. 
   + By reading the dirent information in the ecache in the /proc directory one by one, the process directory information is passed back to the user mode for printing.
